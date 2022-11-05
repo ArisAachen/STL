@@ -1,10 +1,9 @@
 #ifndef __STL_ALLOC_H__
 #define __STL_ALLOC_H__
 
+#include <new>
 #include <cstdlib>
 #include <cstddef>
-#include <new>
-
 
 namespace stl {
 
@@ -104,9 +103,84 @@ private:
 };
 
 
+template<bool thead, int insl> 
+class _default_alloc_template {
+public:
 
+  static void* allocate(std::size_t size) {
 
+  }
 
+  static void* deallocate(void* ptr, std::size_t /*n*/) {
+
+  }
+ 
+private:
+  /**
+   * @brief realloc heap 
+   * @param[in] size alloc size
+   * */
+  static void* refill(std::size_t size) {
+    // bound up size
+    size = bound_up(size);
+
+  }
+
+  static void* chunk_allock() {
+
+  }
+
+private:
+  // obj to store heap block
+  union  obj {
+    obj* free_list_link;
+    char* client_data;
+  };
+  /// block count
+  static constexpr int get_block_count() {
+    return max_block_size_ / align_size_;
+  }
+  
+  /**
+   * @brief calculate located block index
+   * @param[in] size block size
+   * */  
+  static int get_lock_index(std::size_t size) {
+    return size / align_size_;
+  }
+
+  /**
+   * @brief bound up
+   * @param[in]
+   * */
+  static int bound_up(std::size_t size) {
+    return (size + align_size_ - 1) / align_size_ * align_size_;
+  }
+
+private:
+  /// align block size 
+  static const int align_size_ = 8;
+  /// max block size
+  static const int max_block_size_ = 128;
+  /// free list to store first block of obj 
+  static obj* volatile free_list_[get_block_count()];
+  /// free memory start address
+  static void* start_free_;
+  /// free memory end address
+  static void* end_free_;
+  /// heap size
+  static std::size_t heap_size_;
+};
+
+/// init start free static address
+template<bool thread, int insl>
+void* _default_alloc_template<thread, insl>::start_free_ = nullptr;
+/// init end free static address
+template<bool thread, int insl>
+void* _default_alloc_template<thread, insl>::end_free_ = nullptr;
+/// init head size
+template<bool thread, int insl>
+std::size_t _default_alloc_template<thread, insl>::heap_size_ = 0;
 
 }
 

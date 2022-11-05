@@ -3,7 +3,6 @@
 
 namespace stl {
 
-
 template<typename T, T value>
 /**
  * @brief create compile period obj 
