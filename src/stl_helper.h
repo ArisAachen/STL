@@ -10,7 +10,7 @@ namespace stl {
  * @param[in] size source size
  * @param[in] block adjust block
  * */
-int bound_up(std::size_t size, std::size_t block) {
+std::size_t bound_up(std::size_t size, std::size_t block) {
   return (size + block - 1) / block * block;
 }
 

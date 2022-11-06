@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstddef>
 
+#include "stl_helper.h"
+
 namespace stl {
 
 template<int insl> 
@@ -114,7 +116,11 @@ public:
   static void* deallocate(void* ptr, std::size_t /*n*/) {
 
   }
- 
+
+  static void* realloc(void* ptr, std::size_t /*n*/, std::size_t new_size) {
+
+  }
+
 private:
   /**
    * @brief realloc heap 
@@ -125,8 +131,34 @@ private:
     size = bound_up(size);
 
   }
-
-  static void* chunk_allock() {
+  
+  /**
+   * @brief chunk alloc memory
+   * */
+  static void* chunk_allock(std::size_t size, std::size_t& count) {
+    // get total bytes
+    std::size_t total_bytes = size * count;
+    // get capibility 
+    std::ptrdiff_t capibility = end_free_ - start_free_;
+    /// result 
+    char* result = nullptr;
+    // check if left capibility is enough
+    if (capibility >= total_bytes) {
+      result = start_free_;
+      start_free_ += total_bytes;
+      return result; 
+    }
+    // support at least block
+    if (capibility >= size) {
+      count = capibility / size;
+      // calculate available bytes
+      std::size_t available_bytes = size * count;
+      result = start_free_;
+      start_free_ += available_bytes;
+      return result;
+    }
+    
+    
 
   }
 
@@ -151,10 +183,10 @@ private:
 
   /**
    * @brief bound up
-   * @param[in]
+   * @param[in] size bound size
    * */
   static int bound_up(std::size_t size) {
-    return (size + align_size_ - 1) / align_size_ * align_size_;
+    return stl::bound_up(size, align_size_);
   }
 
 private:
@@ -163,24 +195,29 @@ private:
   /// max block size
   static const int max_block_size_ = 128;
   /// free list to store first block of obj 
-  static obj* volatile free_list_[get_block_count()];
+  static obj* free_list_[get_block_count()];
   /// free memory start address
-  static void* start_free_;
+  static char* start_free_;
   /// free memory end address
-  static void* end_free_;
+  static char* end_free_;
   /// heap size
   static std::size_t heap_size_;
 };
 
 /// init start free static address
 template<bool thread, int insl>
-void* _default_alloc_template<thread, insl>::start_free_ = nullptr;
+char* _default_alloc_template<thread, insl>::start_free_ = nullptr;
 /// init end free static address
 template<bool thread, int insl>
-void* _default_alloc_template<thread, insl>::end_free_ = nullptr;
+char* _default_alloc_template<thread, insl>::end_free_ = nullptr;
 /// init head size
 template<bool thread, int insl>
 std::size_t _default_alloc_template<thread, insl>::heap_size_ = 0;
+/// init free list 
+template<bool thread, int insl>
+typename _default_alloc_template<thread, insl>::obj* _default_alloc_template<thread, insl>::free_list_[get_block_count()] = {};
+
+
 
 }
 
