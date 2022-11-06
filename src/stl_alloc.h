@@ -5,8 +5,6 @@
 #include <cstdlib>
 #include <cstddef>
 
-#include "stl_helper.h"
-
 namespace stl {
 
 template<int insl> 
@@ -48,6 +46,7 @@ public:
     void* new_ptr = std::realloc(ptr, size);
     if (new_ptr == nullptr)
       new_ptr = oom_realloc(ptr, size);
+
     return ptr;
   }
   
@@ -179,8 +178,10 @@ private:
     // find next
     obj* origin, tail;
     tail = origin = (obj*)(result + size);
+    // link all memory
     for (int index = 2; index < count; index++) {
       obj* next = (obj*)(index * size);
+      next->free_list_link = nullptr;
       tail->free_list_link = next;
       tail = next;
     }
@@ -272,7 +273,9 @@ private:
     obj* free_list_link;
     char* client_data;
   };
-  ///
+  /**
+   * @brief get block count in compile peroid
+   * */ 
   static constexpr int get_block_count() {
     return max_block_size_ / align_size_;
   }
@@ -291,7 +294,7 @@ private:
    * @param[in] size bound size
    * */
   static int bound_up(std::size_t size) {
-    return stl::bound_up(size, align_size_);
+    return (size + align_size_ - 1) / align_size_ * align_size_;
   }
 
 private:

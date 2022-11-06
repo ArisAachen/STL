@@ -4,8 +4,6 @@
 #include <new>
 #include <type_traits>
 
-#include "stl_define.h"
-
 namespace stl {
 
 template<typename T, typename U>
@@ -33,7 +31,7 @@ template<typename ForwardIterator>
  * @param[in] begin iterator header 
  * @param[in] end iterator tail
  * */
-inline void _destroy_aux(ForwardIterator begin, ForwardIterator end, __true_type) {}
+inline void _destroy_aux(ForwardIterator begin, ForwardIterator end, std::true_type) {}
 
 
 template<typename ForwardIterator>
@@ -42,7 +40,7 @@ template<typename ForwardIterator>
  * @param[in] begin iterator header
  * @param[in] end iterator tail
  * */
-inline void _destroy_aux(ForwardIterator begin, ForwardIterator end, __false_type) {
+inline void _destroy_aux(ForwardIterator begin, ForwardIterator end, std::false_type) {
   for (; begin != end; begin++)
     destroy(&*begin);
 }
@@ -67,7 +65,8 @@ template<typename ForwardIterator>
  * */
 inline void destroy(ForwardIterator begin, ForwardIterator end) {
   typedef typename ForwardIterator::value_type value_type;
-  _destroy(begin, end, &value_type{});  
+  _destroy(begin, end, value_type());  
+  
 }
 
 

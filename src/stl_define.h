@@ -3,6 +3,11 @@
 
 namespace stl {
 
+template<typename T>
+T value_type(T* t) {
+  typedef T value_type;
+}
+
 template<typename T, T value>
 /**
  * @brief create compile period obj 
