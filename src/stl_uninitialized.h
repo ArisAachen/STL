@@ -37,10 +37,10 @@ inline ForwardIterator _uninitialized_copy_aux(InputIterator begin, InputIterato
                                                ForwardIterator result, std::false_type) {
   ForwardIterator cur = result;
   // construct all obj
-  for (; begin != end; begin++, result++) {
-    construct(&(*result), *begin);
+  for (; begin != end; begin++, cur++) {
+    construct(&(*cur), *begin);
   }
-  return result;
+  return cur;
 }
 
 /**
@@ -80,7 +80,7 @@ inline ForwardIterator uninitialized_copy(InputIterator begin, InputIterator end
 template<typename ForwardIterator, typename T>
 inline void _uninitialized_fill_aux(ForwardIterator begin, ForwardIterator end,
                                 const T& value, std::true_type) {
-  std::fill(begin, end, value);
+  return std::fill(begin, end, value);
 }
 
 /**
@@ -93,9 +93,24 @@ inline void _uninitialized_fill_aux(ForwardIterator begin, ForwardIterator end,
 template<typename ForwardIterator, typename T>
 inline void _uninitialized_fill_aux(ForwardIterator begin, ForwardIterator end, 
                                     const T& value, std::false_type) {
-  for (; begin != end; begin++) {
-    construct(&(*begin), value);
+  ForwardIterator cur = begin;
+  for (; cur != end; cur++) {
+    construct(&(*cur), value);
   }
+}
+
+/**
+ * @brief fill pod data to target place
+ * @param[in] begin iterator begin
+ * @param[in] end iterator end
+ * @param[in] value obj param
+ * @param[in] type iterator type
+ * */
+template<typename ForwardIterator, typename T, typename Type>
+inline void _uninitialized_fill(ForwardIterator begin, ForwardIterator end, const T& value, 
+                                const Type&) {
+  typedef typename std::is_pod<Type>::type pod_type;
+  return _uninitialized_fill_aux(begin, end, value, pod_type());
 }
 
 /**
@@ -106,8 +121,8 @@ inline void _uninitialized_fill_aux(ForwardIterator begin, ForwardIterator end,
  * */
 template<typename ForwardIterator, typename T>
 inline void uninitialized_fill(ForwardIterator begin, ForwardIterator end, const T& value) {
-  typedef typename std::is_pod<T>::type pod_type;
-  return _uninitialized_fill_aux(begin, end, value, pod_type());
+  typedef typename ForwardIterator::type value_type;
+  return _uninitialized_fill(begin, end, value, value_type());
 }
 
 /**
@@ -133,10 +148,25 @@ inline void _uninitialized_fill_n_aux(ForwardIterator begin, int count, const T&
 template<typename ForwardIterator, typename T>
 inline void _uninitialized_fill_n_aux(ForwardIterator begin, int count, const T& value,
                                  std::false_type) {
+  ForwardIterator cur = begin;
   // use default construct
-  for (; count > 0; count--, begin++) {
-    construct(&(*begin), value);
+  for (; count > 0; count--, cur++) {
+    construct(&(*cur), value);
   }
+}
+
+/**
+ * @brief fill pod data to target place 
+ * @param[in] begin iterator begin
+ * @param[in] count fill count
+ * @param[in] value obj param
+ * @param[in] type obj type
+ * */
+template<typename ForwardIterator, typename T, typename Type>
+inline void _uninitialized_fill_n(ForwardIterator begin, int count, const T& value,
+                                 const Type&) {
+  typedef typename std::is_pod<Type>::type pod_type;
+  return _uninitialized_fill_n_aux(begin, count, value, pod_type());
 }
 
 /**
@@ -147,8 +177,20 @@ inline void _uninitialized_fill_n_aux(ForwardIterator begin, int count, const T&
  * */
 template<typename ForwardIterator, typename T>
 inline void uninitialized_fill_n(ForwardIterator begin, int count, const T& value) {
-  typedef typename std::is_pod<T> pod_type;
-  _uninitialized_fill_n_aux(begin, count, value, pod_type());
+  typedef typename ForwardIterator::type value_type;
+  return _uninitialized_fill_n(begin, count, value, value_type());
+}
+
+/**
+ * @brief copy specialization
+ * @param[in] begin iterator begin
+ * @param[in] end iterator end
+ * @param[in] result iterator result
+ * */
+template<>
+inline char* uninitialized_copy(const char* begin, const char* end, char* result) {
+  memmove(result, begin, (end - begin));
+  return result + (end - begin);
 }
 
 }
