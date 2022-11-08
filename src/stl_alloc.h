@@ -1,6 +1,8 @@
 #ifndef __STL_ALLOC_H__
 #define __STL_ALLOC_H__
 
+#include "stl_construct.h"
+
 #include <new>
 #include <cstdlib>
 #include <cstddef>
@@ -149,9 +151,12 @@ public:
     ((obj*)ptr)->free_list_link = link_head;
     free_list_[index] = (obj*)ptr;
   }
-
-  static void* realloc(void* ptr, std::size_t /*n*/, std::size_t new_size) {
-
+  
+  /**
+   * @brief get max size
+   * */ 
+  static std::size_t max_size() {
+    return heap_size_;
   }
 
 private:
@@ -325,6 +330,93 @@ std::size_t _default_alloc_template<thread, insl>::heap_size_ = 0;
 /// init free list 
 template<bool thread, int insl>
 typename _default_alloc_template<thread, insl>::obj* _default_alloc_template<thread, insl>::free_list_[get_block_count()] = {};
-}
 
+// simple_alloc use to pack alloc 
+template<typename T, typename Alloc> 
+class simple_alloc {
+public:
+  // stl order definition
+  typedef T value_type;
+  typedef T* pointer;
+  typedef const T* const_pointer;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef std::size_t size_type;
+  typedef std::ptrdiff_t difference_type;
+  
+  /**
+   * @brief construct
+   * */
+  simple_alloc() {}
+  
+  /**
+   * @brief copy construct
+   * */
+  simple_alloc(const simple_alloc&) {}
+  
+  /**
+   * @brief destroy obj
+   * */
+  virtual~simple_alloc() {}
+
+  /**
+   * @brief get address from reference
+   * @param[in] value reference value
+   * */
+  pointer address(reference value) {
+    return &value;
+  }
+  
+  /**
+   * @brief get const value from reference
+   * @param[in] value const reference value
+   * */
+  const_pointer address(const_reference value) {
+    return &value;
+  }
+  
+  /**
+   * @brief allocate memory from Alloc
+   * @param[in] size alloc size
+   * @param[in] void* non used
+   * */
+  pointer allocate(size_type size, const void*) {
+    return (pointer)Alloc::allocate(size);
+  }
+  
+  /**
+   * @brief deallocate memory to Alloc
+   * @param[in] ptr obj address
+   * @param[in] size obj size
+   * */
+  void deallocate(pointer ptr, size_type size) {
+    return (pointer)Alloc::deallocate(ptr, size);
+  }
+  
+  /**
+   * @brief alloc max size
+   * */
+  size_type max_size() {
+    return Alloc::max_size();
+  }
+  
+  /**
+   * @brief construct obj
+   * @param[in] ptr obj address
+   * @param[in] value param value
+   * */
+  void construct(pointer ptr, const T& value) {
+    return stl::construct(ptr, value);
+  }
+  
+  /**
+   * @brief destroy obj
+   * @param[in] ptr obj address
+   * */
+  void destroy(pointer ptr) {
+    return stl::destroy(ptr);
+  }
+};
+
+}
 #endif //!__STL_ALLOC_H__

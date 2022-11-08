@@ -1,12 +1,12 @@
 #ifndef __STL_UNINITIALIZED_H__
 #define __STL_UNINITIALIZED_H__
 
+#include "stl_construct.h"
+
 #include <cstring>
 #include <cstddef>
 #include <algorithm>
 #include <type_traits>
-
-#include "stl_construct.h"
 
 namespace stl {
 
