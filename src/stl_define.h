@@ -30,7 +30,16 @@ typedef interal_const<bool, true> __true_type;
 // compile period false
 typedef interal_const<bool, false> __false_type;
 
-
+// basic input iterator, read-only
+struct input_iterator_tag {};
+// basic output iterator, write-only
+struct output_iterator_tag {};
+// forward type, rw support
+struct forward_iterator_tag : input_iterator_tag, output_iterator_tag {};
+// bidirectional, can reverse
+struct bidirectional_iterator_tag : forward_iterator_tag{};
+// random access, any postion
+struct random_access_iterator_tag : bidirectional_iterator_tag{};
 
 
 }
