@@ -52,3 +52,23 @@ template<typename T>
 struct iterator_traits<T*> {
   typedef T value_type;
 };
+
+#include <string>
+
+class TestOp {
+
+public:
+  bool operator[](const std::string& index) {
+    return false;
+  }
+
+};
+
+
+#include <vector>
+
+void test() {
+  std::vector<int> abc;
+  abc.at(1);
+    
+}
