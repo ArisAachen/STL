@@ -380,8 +380,15 @@ public:
    * @param[in] size alloc size
    * @param[in] void* non used
    * */
-  pointer allocate(size_type size, const void*) {
-    return (pointer)Alloc::allocate(size);
+  pointer allocate(size_type size) {
+    return (pointer)Alloc::allocate(size * sizeof(T));
+  }
+  
+  /**
+   * @brief allocate memory from Alloc
+   * */
+  pointer allocate(void) {
+    return (pointer)Alloc::allocate(sizeof(T));
   }
   
   /**

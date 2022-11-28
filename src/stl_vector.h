@@ -2,6 +2,7 @@
 #define __STL_VECTOR_H__
 
 #include "stl_alloc.h"
+#include "stl_construct.h"
 #include "stl_uninitialized.h"
 
 #include <new>
@@ -159,18 +160,39 @@ public:
   }
 
 private:
+  /**
+   * @brief use count value to initial memory
+   * @param[in] count elem count
+   * @param[in] value elem value
+   * */
   void fill_initialize(size_type count, const T& value) {
-
+    // allocate and fill
+    start_ = allocate_and_fill(count, value);
+    finish_ = start_ + count;
+    end_of_storage_ = finish_;
   }
-  
+ 
+  /**
+   * @brief allocate and fill memory
+   * @param[in] count elem count
+   * @param[in] value elem value
+   * */
   void allocate_and_fill(size_type count, const T& value) {
-
+    // allocate memory
+    iterator result = data_allocator::allocate(count);
+    stl::uninitialized_fill_n(result, count, value);
+    return result;
   }
 
+  /**
+   * @brief insert value to position
+   * @param[in] pos insert pos
+   * @param[in] value elem value
+   * */
   void insert_aux(iterator pos, const T& value) {
     // check if current storage not enough
     if (finish_ != end_of_storage_) {
-      uninitialized_copy(pos, finish_, pos + 1);
+      stl::uninitialized_copy(pos, finish_, pos + 1);
       *pos = value;
       ++finish_;
       return;
@@ -178,9 +200,19 @@ private:
     // none capacity is left, should realloc memory
     size_type old_size = size();
     size_type new_size = old_size == 0 ? 1 : old_size * 2;
-    iterator new_start = data_allocator::allocate();
-      
-
+    iterator new_start = data_allocator::allocate(new_size);
+    // copy start to pos value to new start
+    iterator new_finish = stl::uninitialized_copy(start_, pos, new_start);    
+    construct(pos, value);
+    // add finish
+    ++new_finish;
+    // copy left part
+    new_finish = stl::uninitialized_copy(pos, finish_, new_finish);
+    // destroy old memory
+    stl::destroy(start_, finish_); 
+    start_ = new_start;
+    finish_ = new_finish;
+    end_of_storage_ = start_ + new_size;
   }
 
 private:
