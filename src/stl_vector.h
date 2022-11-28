@@ -2,6 +2,7 @@
 #define __STL_VECTOR_H__
 
 #include "stl_alloc.h"
+#include "stl_uninitialized.h"
 
 #include <new>
 #include <string>
@@ -132,12 +133,55 @@ public:
 
   }
 
+  void push_back(const T& value) {
+
+  }
   
+  template<typename... Args>
+  void emplace_back(Args&&... args) {
+    
+  }
+
+  void resize(size_type size) {
+
+  }
+  
+  void erase(iterator pos) {
+
+  }
+
+  void erase(iterator begin, iterator end) {
+
+  }
+
+  void pop_back() {
+
+  }
 
 private:
+  void fill_initialize(size_type count, const T& value) {
+
+  }
   
+  void allocate_and_fill(size_type count, const T& value) {
 
+  }
 
+  void insert_aux(iterator pos, const T& value) {
+    // check if current storage not enough
+    if (finish_ != end_of_storage_) {
+      uninitialized_copy(pos, finish_, pos + 1);
+      *pos = value;
+      ++finish_;
+      return;
+    }
+    // none capacity is left, should realloc memory
+    size_type old_size = size();
+    size_type new_size = old_size == 0 ? 1 : old_size * 2;
+    iterator new_start = data_allocator::allocate();
+      
+
+  }
 
 private:
   /// start iterator
