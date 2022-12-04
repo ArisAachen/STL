@@ -126,16 +126,30 @@ public:
 
   }
 
+  
+  /**
+   * @brief insert value to pos
+   * @param[in] pos insert pos
+   * @param[in] value insert value
+   * */
   iterator insert(iterator pos, const T& value) {
-
+    insert_aux(pos, value);
+    return pos;
   }
 
-  iterator insert(iterator pos, size_type count, const T& value) {
-
-  }
-
+  /**
+   * @brief push value to back
+   * @param[in] value back value
+   * */
   void push_back(const T& value) {
-
+    // check if already at last pos
+    if (finish_ != end_of_storage_) {
+      construct(finish_, value);
+      ++finish_;
+      return;
+    }
+    // realloc and place
+    insert_aux(end() + 1, value);
   }
   
   template<typename... Args>
@@ -147,12 +161,28 @@ public:
 
   }
   
-  void erase(iterator pos) {
-
+  /**
+   * @brief erase iterator pos 
+   * @param[in] pos iterator pos
+   * */
+  iterator erase(iterator pos) {
+    // check if current pos valid
+    if (pos >= finish_)
+      return;
+    // copy next pos to finish
+    stl::uninitialized_copy(pos + 1, finish_, pos);
+    --finish_;
+    destroy(finish_);
+    return pos;
   }
 
+  /**
+   * @brief erase begin to end
+   * @param[in] begin iterator begin
+   * @param[in] end iterator end
+   * */
   void erase(iterator begin, iterator end) {
-
+    
   }
 
   void pop_back() {
@@ -213,6 +243,10 @@ private:
     start_ = new_start;
     finish_ = new_finish;
     end_of_storage_ = start_ + new_size;
+  }
+
+  void insert_aux(iterator begin, iterator end, const T& value) {
+
   }
 
 private:
